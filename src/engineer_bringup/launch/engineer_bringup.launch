@@ -4,4 +4,6 @@
 
 <node pkg="mcu_communication" type="mcu_communication_node" name="mcu_communication_node" />
 
+<node pkg="arm_mcu_bridge" type="mcu_to_moveit_node" name="mcu_to_moveit_node" />
+
 </launch>
