@@ -1,0 +1,3 @@
+[submodule "src/multi-usb-camera-ros"]
+	path = src/multi-usb-camera-ros
+	url = git@github.com:Ikemura-kei/multi-usb-camera-ros.git
