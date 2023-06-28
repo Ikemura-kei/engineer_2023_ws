@@ -1,36 +1,46 @@
 %YAML:1.0
 ---
-camera0:
-  name: "backward-left"
-  rotate_angle: 180
-  device_id: 0
-  width: 800
-  height: 480
-
 camera1:
-  name: "backward-right"
-  rotate_angle: 180
-  device_id: 2
-  width: 800
-  height: 480
-
-camera2:
-  name: "car-left"
+  name: "car_left"
   rotate_angle: 0
   device_id: 4
   width: 800
   height: 480
+  publish_image: true
+  frame_id: "map"
+
+camera0:
+  name: "backward_right"
+  rotate_angle: 180
+  device_id: 2
+  width: 800
+  height: 480
+  publish_image: true
+  frame_id: "map"
+
+camera2:
+  name: "backward_left"
+  rotate_angle: 180
+  device_id: 0
+  width: 800
+  height: 480
+  publish_image: true
+  frame_id: "map"
 
 # camera3:
-#   name: "car-right"
+#   name: "car_right"
 #   rotate_angle: 180
 #   device_id: 6
 #   width: 800
 #   height: 480
+#   publish_image: false
+#   frame_id: "map"
 
 # camera4:
-#   name: "robot-arm"
+#   name: "robot_arm"
 #   rotate_angle: 90
 #   device_id: 8
 #   width: 800
 #   height: 480
+#   publish_image: false
+#   frame_id: "map"
