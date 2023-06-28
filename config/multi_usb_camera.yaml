@@ -1,0 +1,36 @@
+%YAML:1.0
+---
+camera0:
+  name: "backward-left"
+  rotate_angle: 180
+  device_id: 0
+  width: 800
+  height: 480
+
+camera1:
+  name: "backward-right"
+  rotate_angle: 180
+  device_id: 2
+  width: 800
+  height: 480
+
+camera2:
+  name: "car-left"
+  rotate_angle: 0
+  device_id: 4
+  width: 800
+  height: 480
+
+# camera3:
+#   name: "car-right"
+#   rotate_angle: 180
+#   device_id: 6
+#   width: 800
+#   height: 480
+
+# camera4:
+#   name: "robot-arm"
+#   rotate_angle: 90
+#   device_id: 8
+#   width: 800
+#   height: 480
