@@ -13,8 +13,9 @@
 #include <robot_msgs/ArmStatus.h>
 #include <sensor_msgs/JointState.h>
 #include <rag2_moveit/CMDInfo.h>
+#include <math.h>
 
-static const float JOINT_VALUE_SCALAR = 1 / 16384.0;
+static const float JOINT_VALUE_SCALAR = M_PI / 32768.0;
 
 static sensor_msgs::JointState jointState;
 static rag2_moveit::CMDInfo cmdInfo;
