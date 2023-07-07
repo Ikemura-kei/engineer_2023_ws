@@ -1,3 +1,6 @@
 [submodule "src/multi-usb-camera-ros"]
 	path = src/multi-usb-camera-ros
 	url = git@github.com:Ikemura-kei/multi-usb-camera-ros.git
+[submodule "src/aruco_cube_detector"]
+	path = src/aruco_cube_detector
+	url = git@github.com:Ikemura-kei/aruco_cube_detector.git
