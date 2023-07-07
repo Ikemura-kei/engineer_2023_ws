@@ -16,6 +16,7 @@
 #include <math.h>
 
 static const float JOINT_VALUE_SCALAR = M_PI / 32768.0;
+static const int COOLDOWN = 3.0;
 
 static sensor_msgs::JointState jointState;
 static rag2_moveit::CMDInfo cmdInfo;
@@ -23,6 +24,7 @@ static rag2_moveit::CMDInfo cmdInfo;
 static ros::Publisher cmdInfoPub;
 static ros::Publisher jointStatePub;
 
+static ros::Time lastCmdUpdateTime;
 void armStatusCb(const robot_msgs::ArmStatusConstPtr &msg)
 {
     // -- set joint state message --
@@ -36,18 +38,33 @@ void armStatusCb(const robot_msgs::ArmStatusConstPtr &msg)
     jointStatePub.publish(jointState);
 
     // -- set command info --
-    cmdInfo.header.stamp = ros::Time::now();
-    cmdInfo.header.seq += 1;
-    cmdInfo.mode = msg->mode;
-    cmdInfo.orientation[3] = msg->target_orientation[0]; // w
-    cmdInfo.orientation[0] = msg->target_orientation[1]; // i
-    cmdInfo.orientation[1] = msg->target_orientation[2]; // j
-    cmdInfo.orientation[2] = msg->target_orientation[3]; // k
-    for (int i = 0; i < 3; i++)
-        cmdInfo.positions[i] = msg->target_position[i];
+    ros::Time curTime = ros::Time::now();
+    if ((curTime - lastCmdUpdateTime).toSec() >= COOLDOWN)
+    {
+        cmdInfo.header.stamp = ros::Time::now();
+        cmdInfo.header.seq += 1;
+        // cmdInfo.mode = msg->mode;
+        cmdInfo.mode = 1; // debug, forcing it
 
-    // -- pubish command info --
-    cmdInfoPub.publish(cmdInfo);
+        // cmdInfo.orientation[3] = msg->target_orientation[0]; // w
+        // cmdInfo.orientation[0] = msg->target_orientation[1]; // i
+        // cmdInfo.orientation[1] = msg->target_orientation[2]; // j
+        // cmdInfo.orientation[2] = msg->target_orientation[3]; // k
+        // for (int i = 0; i < 3; i++)
+        //     cmdInfo.positions[i] = msg->target_position[i];
+
+        // debug, forcing these
+        cmdInfo.orientation[3] = 0.217596; // w
+        cmdInfo.orientation[0] = -0.388996; // i
+        cmdInfo.orientation[1] = 0.892114; // j
+        cmdInfo.orientation[2] = 0.0739315; // k
+        cmdInfo.positions = {-0.153031, -0.185756, 0.105613};
+        
+        // -- pubish command info --
+        cmdInfoPub.publish(cmdInfo);
+        lastCmdUpdateTime = curTime;
+        ROS_WARN_STREAM("--> Command published");
+    }
 }
 
 int main(int ac, char **av)
@@ -56,6 +73,8 @@ int main(int ac, char **av)
     ros::Time::init();
 
     ros::NodeHandle nh;
+
+    lastCmdUpdateTime = ros::Time::now();
 
     // -- publisher --
     jointStatePub = nh.advertise<sensor_msgs::JointState>("/joint_states", 10);

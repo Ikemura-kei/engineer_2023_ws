@@ -137,7 +137,6 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(mcu_to_moveit_node src/Mcu2MoveitNode.cpp)
-add_executable(moveit_to_mcu_node src/Moveit2McuNode.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -152,10 +151,6 @@ add_executable(moveit_to_mcu_node src/Moveit2McuNode.cpp)
 target_link_libraries(mcu_to_moveit_node
   ${catkin_LIBRARIES}
 )
-target_link_libraries(moveit_to_mcu_node
-  ${catkin_LIBRARIES}
-)
-
 
 #############
 ## Install ##
