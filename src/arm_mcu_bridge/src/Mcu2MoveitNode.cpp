@@ -16,7 +16,13 @@
 #include <math.h>
 
 static const float JOINT_VALUE_SCALAR = M_PI / 32768.0;
-static const int COOLDOWN = 3.0;
+static const float SEND_PERIOD = 20;
+
+static bool lastPlanValid = false;
+static uint8_t lastSequence = 255;
+static ros::Time lastCmdUpdateTime;
+static ros::Time lastValidAndSequenceChangeTime;
+static int commandCounter = 0;
 
 static sensor_msgs::JointState jointState;
 static rag2_moveit::CMDInfo cmdInfo;
@@ -24,7 +30,6 @@ static rag2_moveit::CMDInfo cmdInfo;
 static ros::Publisher cmdInfoPub;
 static ros::Publisher jointStatePub;
 
-static ros::Time lastCmdUpdateTime;
 void armStatusCb(const robot_msgs::ArmStatusConstPtr &msg)
 {
     // -- set joint state message --
@@ -39,32 +44,32 @@ void armStatusCb(const robot_msgs::ArmStatusConstPtr &msg)
 
     // -- set command info --
     ros::Time curTime = ros::Time::now();
-    if ((curTime - lastCmdUpdateTime).toSec() >= COOLDOWN)
+
+    ROS_INFO_STREAM("--> Time: " << (curTime - lastValidAndSequenceChangeTime).toSec());
+    if (msg->plan_valid && (!lastPlanValid || lastSequence != msg->sequence)) // rising edge
     {
         cmdInfo.header.stamp = ros::Time::now();
-        cmdInfo.header.seq += 1;
-        // cmdInfo.mode = msg->mode;
-        cmdInfo.mode = 1; // debug, forcing it
+        cmdInfo.sequence = msg->sequence;
+        cmdInfo.mode = msg->mode;
 
-        // cmdInfo.orientation[3] = msg->target_orientation[0]; // w
-        // cmdInfo.orientation[0] = msg->target_orientation[1]; // i
-        // cmdInfo.orientation[1] = msg->target_orientation[2]; // j
-        // cmdInfo.orientation[2] = msg->target_orientation[3]; // k
-        // for (int i = 0; i < 3; i++)
-        //     cmdInfo.positions[i] = msg->target_position[i];
+        cmdInfo.orientation[0] = msg->target_orientation[1]; // i
+        cmdInfo.orientation[1] = msg->target_orientation[2]; // j
+        cmdInfo.orientation[2] = msg->target_orientation[3]; // k
+        cmdInfo.orientation[3] = msg->target_orientation[0]; // w
+        for (int i = 0; i < 3; i++)
+            cmdInfo.positions[i] = msg->target_position[i];
 
-        // debug, forcing these
-        cmdInfo.orientation[3] = 0.217596; // w
-        cmdInfo.orientation[0] = -0.388996; // i
-        cmdInfo.orientation[1] = 0.892114; // j
-        cmdInfo.orientation[2] = 0.0739315; // k
-        cmdInfo.positions = {-0.153031, -0.185756, 0.105613};
-        
         // -- pubish command info --
         cmdInfoPub.publish(cmdInfo);
         lastCmdUpdateTime = curTime;
         ROS_WARN_STREAM("--> Command published");
     }
+    if (lastPlanValid != msg->plan_valid || lastSequence != msg->sequence)
+    {
+        lastValidAndSequenceChangeTime = ros::Time::now();
+    }
+    lastSequence = msg->sequence;
+    lastPlanValid = msg->plan_valid;
 }
 
 int main(int ac, char **av)
@@ -75,13 +80,11 @@ int main(int ac, char **av)
     ros::NodeHandle nh;
 
     lastCmdUpdateTime = ros::Time::now();
+    lastValidAndSequenceChangeTime = ros::Time::now();
 
     // -- publisher --
     jointStatePub = nh.advertise<sensor_msgs::JointState>("/joint_states", 10);
     cmdInfoPub = nh.advertise<rag2_moveit::CMDInfo>("/cmd_pub", 10);
-
-    // -- subscriber --
-    ros::Subscriber armCmdSub = nh.subscribe<robot_msgs::ArmStatus>("/arm_status", 10, armStatusCb);
 
     // -- initialize joint state message, can save time later --
     jointState.header.seq = 0;
@@ -98,6 +101,13 @@ int main(int ac, char **av)
     cmdInfo.header.frame_id = "";
     cmdInfo.name = "bocchi";
     cmdInfo.mode = 0;
+    cmdInfo.sequence = 0;
+
+    ros::Duration sleepDur(20);
+    sleepDur.sleep();
+
+    // -- subscriber --
+    ros::Subscriber armCmdSub = nh.subscribe<robot_msgs::ArmStatus>("/arm_status", 10, armStatusCb);
 
     static ros::Rate rate(2000);
     while (ros::ok())
